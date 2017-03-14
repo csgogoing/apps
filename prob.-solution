@@ -1,0 +1,3 @@
+1.port already been userd:
+  (for powershell) netstat -ano|findstr "5554"
+                   taskkill /pid 5196 /f

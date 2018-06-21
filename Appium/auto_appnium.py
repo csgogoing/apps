@@ -1,27 +1,49 @@
 #coding=utf-8
 import os
+import re
 import time
-import unittest
 from appium import webdriver
 global driver
+import random
 
 
 class Test_appnium:
 	def __init__(self):
+		# 读取设备 id
+		readDeviceId = list(os.popen('adb devices').readlines())
+		# 正则表达式匹配出 id 信息
+		deviceId = re.findall(r'^\w*\b', readDeviceId[1])[0]
+		#设备信息
 		desired_caps={
+		'newCommandTimeout':60,
 		'device':'android',
 		'platformName':'Android',
 		'browserName':'',
-		'version':'6.0',
-		'deviceName':'MYV0215627013610',
+		'version':'',
+		'deviceName':deviceId,
 		'appPackage':'com.xywy.askxywy',
 		'appActivity':'.domain.welcome.activity.WelcomeActivity',
 		'unicodeKeyboard':True,
 		'resetKeyboard':True
 		}
-		self.driver = webdriver.Remote('http://localhost:4723/wd/hub',desired_caps)
+		#打开webdriver，重试3次
+		maxTryNum=3
+		for tries in range(maxTryNum):
+			try:	
+				self.driver = webdriver.Remote('http://localhost:4723/wd/hub',desired_caps)
+				break
+			except:
+				if tries < (maxTryNum-1):
+					print("重试第%d次") %maxTryNum
+					continue
+				else:
+					print('启动webdriver失败')
+			else:
+				logging.error("Has tried %d times, all failed!",maxTryNum)
+				break
 		time.sleep(5)
-		self.driver.implicitly_wait(1)
+		self.driver.implicitly_wait(2)
+		print("程序启动完毕")
 
 	#获得机器屏幕大小x,y
 	def getSize(self):
@@ -59,46 +81,14 @@ class Test_appnium:
 		self.driver.swipe(x1,y1,x2,y1,t)
 
 	def fids(self, id):
+		#ID查找元素方法
 		return self.driver.find_elements_by_id(id)
 
 	def fid(self, id):
+		#ID查找元素方法
 		return self.driver.find_element_by_id(id)
 
-class phone(Test_appnium):
-	def actions(self):
-		# self.swipLeft(1000)
-		# time.sleep(1)
-		# self.swipRight(1000)
-		# time.sleep(1)
-		# self.swipeUp(1000)
-		# time.sleep(1)
-		# self.swipeDown(1000)
-		account = '17810354797'
-		passwd = 'test123'
-		input_massage = '最近有点感冒发烧嗓子疼怎么办啊医生，很久了'.decode('utf-8')
-
-		#登陆
-		self.fid('com.xywy.askxywy:id/tabMine').click()
-		#判断登陆
-		try:
-			logined = self.fid('com.xywy.askxywy:id/tv_title_mine')
-		except:
-			#未登陆，登陆
-			account_pwd = self.fids('com.xywy.askxywy:id/input_edit_text')
-			account_pwd[0].send_keys(account)
-			account_pwd[1].send_keys(passwd)
-			self.fid('com.xywy.askxywy:id/login_btn_tv').click()
-		else:
-			#已登陆，跳过
-			self.fid('com.xywy.askxywy:id/tabQuery').click()
-
-		
-		#快速问诊
-		self.fid('com.xywy.askxywy:id/quick_ask_layout').click()
-		self.fid('com.xywy.askxywy:id/et_question_describe').send_keys(input_massage)
-		self.fid('com.xywy.askxywy:id/btn_right').click()
-
-
-if __name__ == '__main__':
-	myphone = phone()
-	myphone.actions()
+	def mquit(self):
+		#退出driver
+		self.driver.quit()
+		print('程序退出')

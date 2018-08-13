@@ -2,7 +2,10 @@
 #coding=utf-8
 
 import sys  
-from com.android.monkeyrunner import MonkeyRunner   
+from com.android.monkeyrunner import MonkeyRunner
+from com.android.monkeyrunner import MonkeyDevice
+from com.android.monkeyrunner import MonkeyImage
+
 CMD_MAP = {  
 	'TOUCH': lambda dev, arg: dev.touch(**arg),  
 	'DRAG': lambda dev, arg: dev.drag(**arg),  
